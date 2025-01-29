@@ -10,6 +10,7 @@ import (
 type Subscribe interface {
 	Subscribe(_ context.Context, tx gorm.DB, subscribe domain.Subscribe) error
 	Unsubscribe(_ context.Context, tx gorm.DB, subscribe domain.Subscribe) error
+	GetAllSubscribes(_ context.Context, tx gorm.DB) ([]domain.Subscribe, error)
 
-	CreateSubscribeHistory(_ context.Context, tx gorm.DB, subscribe domain.Subscribe, flag bool) error
+	//CreateSubscribeHistory(_ context.Context, tx gorm.DB, subscribe domain.Subscribe, flag bool) error
 }

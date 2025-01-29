@@ -40,7 +40,7 @@ type DatabaseConfig struct {
 func (d DatabaseConfig) DSN() string {
 	switch d.Type {
 	case "sqlite":
-		return "temp_db?_foreign_keys=on"
+		return ".temp_db?_foreign_keys=on"
 	case "mysql":
 		return fmt.Sprintf(
 			"%s:%s@tcp(%s:%d)/%s",

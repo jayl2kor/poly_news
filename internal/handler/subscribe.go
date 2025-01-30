@@ -38,13 +38,32 @@ func (s *Subscribe) Subscribe(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "subscribed"})
+	c.JSON(http.StatusCreated, gin.H{"message": "subscribed"})
 }
 
 func (s *Subscribe) Unsubscribe(c *gin.Context) {
-	c.JSON(http.StatusNotImplemented, gin.H{"error": "not implemented"})
+	var request dto.SubscribeRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	err := s.SubscribeUsecase.UnsubscribeWithEmail(c, request.Email)
+	if err != nil {
+		handlerError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusNoContent, nil)
+	return
+
 }
 
 func (s *Subscribe) List(c *gin.Context) {
-	c.JSON(http.StatusNotImplemented, gin.H{"error": "not implemented"})
+	subscribes, err := s.SubscribeUsecase.GetAllSubscribes(c)
+	if err != nil {
+		handlerError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, dto.ListSubscribeResponse{Subscribes: subscribes})
 }

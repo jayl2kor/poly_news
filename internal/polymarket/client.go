@@ -24,6 +24,7 @@ type PolyMarketClient interface {
 }
 type Client struct {
 	baseURL    string
+	summaryURL string
 	httpClient *http.Client
 }
 
@@ -36,7 +37,7 @@ func NewClient(baseURL string) *Client {
 
 func (c *Client) ListEventsFromPolyMarket(_ context.Context, tag Tag, limit, offset int) (EventListResponse, error) {
 	queries := fmt.Sprintf("limit=%d&active=true&archived=false&tag_slug=%s&closed=false&order=volume24hr&ascending=false&offset=%d", limit, tag, offset)
-	endpoint := fmt.Sprintf("%s/%s?%s", c.baseURL, "/event/pagination", queries)
+	endpoint := fmt.Sprintf("%s%s?%s", c.baseURL, "/events/pagination", queries)
 	request, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return EventListResponse{}, err
@@ -45,9 +46,9 @@ func (c *Client) ListEventsFromPolyMarket(_ context.Context, tag Tag, limit, off
 }
 
 func (c *Client) GetSummaryForEvent(_ context.Context, ticker string) (SummaryResponse, error) {
-	queries := fmt.Sprintf("promt=%s", ticker)
-	url := fmt.Sprintf("%s/%s?%s", c.baseURL, "api/perplexity", queries)
-	request, err := http.NewRequest(http.MethodGet, url, nil)
+	queries := fmt.Sprintf("prompt=%s", ticker)
+	endpoint := fmt.Sprintf("%s%s?%s", c.summaryURL, "/api/perplexity", queries)
+	request, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return "", err
 	}

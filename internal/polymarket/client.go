@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -50,10 +51,10 @@ func (c *Client) GetSummaryForEvent(_ context.Context, ticker string) (SummaryRe
 	endpoint := fmt.Sprintf("%s%s?%s", c.summaryURL, "/api/perplexity", queries)
 	request, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
-		return "", err
+		return SummaryResponse{}, err
 	}
 
-	return doHttpRequestWithString(c.httpClient, request)
+	return doHttpRequest[SummaryResponse](c.httpClient, request)
 }
 
 func doHttpRequest[T PolyMarketResponse](c *http.Client, req *http.Request) (T, error) {
@@ -73,29 +74,15 @@ func doHttpRequest[T PolyMarketResponse](c *http.Client, req *http.Request) (T, 
 		return data, errors.New("failed to unmarshal polymarket response")
 	}
 
+	if _, ok := any(data).(SummaryResponse); ok {
+		lines := strings.Split(string(body), "data: ")
+		body = []byte(lines[len(lines)-1])
+	}
+
 	err = json.Unmarshal(body, &data)
 	if err != nil {
 		return data, errors.New("failed to unmarshal polymarket response")
 	}
 
 	return data, nil
-}
-
-func doHttpRequestWithString(c *http.Client, req *http.Request) (SummaryResponse, error) {
-	var data SummaryResponse
-	resp, err := c.Do(req)
-	if err != nil {
-		return data, err
-	}
-	if resp.StatusCode != http.StatusOK {
-		return data, errors.New("failed to get data from polymarket")
-	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return data, errors.New("failed to unmarshal polymarket response")
-	}
-
-	return SummaryResponse(body), nil
 }

@@ -119,10 +119,12 @@ func TestClient_GetSummaryForEvent(t *testing.T) {
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetSummaryForEvent() error = %v, wantErr %v", err, tt.wantErr)
 				return
-
 			}
 
-			log.Println(got)
+			for _, v := range got.Choices {
+				log.Println(v.Message)
+			}
+
 		})
 	}
 }

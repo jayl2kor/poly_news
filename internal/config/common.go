@@ -2,11 +2,9 @@ package config
 
 import (
 	"fmt"
+	"gopkg.in/yaml.v3"
 	"io"
 	"os"
-	"poly_news/cmd/core-server/flag"
-
-	"gopkg.in/yaml.v3"
 )
 
 const (
@@ -14,17 +12,11 @@ const (
 	DatabaseTypeSQLite DatabaseType = "sqlite"
 )
 
+type Config interface {
+	CoreServerConfig | NewsLetterGeneratorConfig
+}
+
 type DatabaseType string
-
-type Config struct {
-	Server   ServerConfig   `yaml:"server"`
-	Database DatabaseConfig `yaml:"database"`
-}
-
-type ServerConfig struct {
-	Debug  bool   `yaml:"debug"`
-	Listen string `yaml:"listen"`
-}
 
 type DatabaseConfig struct {
 	Type     DatabaseType `yaml:"type"`
@@ -54,33 +46,35 @@ func (d DatabaseConfig) DSN() string {
 	return ""
 }
 
-func Parse(flags flag.CoreServerFlag) (Config, error) {
-	fd, err := os.Open(flags.ConfigPath)
+func ParseConfig[T Config](configPath string) (T, error) {
+	var config T
+
+	fd, err := os.Open(configPath)
 	defer func() {
 		err := fd.Close()
 		if err != nil {
-			fmt.Println("failed to close configfile", err)
+			fmt.Println("failed to close config file", err)
 		}
 	}()
 
 	if err != nil {
-		return Config{}, fmt.Errorf("failed to open configfile: %w", err)
+		return config, fmt.Errorf("failed to open config file: %w", err)
 	}
 
-	config, err := parseReader(fd)
+	config, err = parseReader[T](fd)
 	if err != nil {
-		return Config{}, err
+		return config, err
 	}
 
 	return config, nil
 }
 
-func parseReader(r io.Reader) (Config, error) {
-	c := Config{}
+func parseReader[T Config](r io.Reader) (T, error) {
+	var c T
 
 	dec := yaml.NewDecoder(r)
 	if err := dec.Decode(&c); err != nil {
-		return Config{}, fmt.Errorf("failed to parse config: %w", err)
+		return c, fmt.Errorf("failed to parse config: %w", err)
 	}
 
 	return c, nil

@@ -15,7 +15,7 @@ import (
 
 func main() {
 	coreServerFlag := lo.Must1(flag.ParseFlags(os.Args[1:]))
-	coreServerConfig := lo.Must1(config.Parse(coreServerFlag))
+	coreServerConfig := lo.Must1(config.ParseConfig[config.CoreServerConfig](coreServerFlag.ConfigPath))
 
 	// Create a new GORM database
 	dbConn := lo.Must1(gorm.New(coreServerConfig.Database))

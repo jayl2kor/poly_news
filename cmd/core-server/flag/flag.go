@@ -7,7 +7,7 @@ type CoreServerFlag struct {
 }
 
 func ParseFlags(arguments []string) (CoreServerFlag, error) {
-	flagSet := flag.NewFlagSet("map-provider", flag.ExitOnError)
+	flagSet := flag.NewFlagSet("core-server", flag.ExitOnError)
 	flags := CoreServerFlag{}
 	flagSet.StringVar(
 		&flags.ConfigPath, "config-file", "config/dev.yaml", "config file path",
